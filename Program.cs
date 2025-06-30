@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Uttt.Micro.Libro.Extenciones;
 using Uttt.Micro.Libro.Persistencia;
 
@@ -7,19 +7,19 @@ var builder = WebApplication.CreateBuilder(args);
 // Agregar controladores
 builder.Services.AddControllers();
 
-// Configurar CORS para React (localhost:3009)
+// Configurar CORS global para permitir todo (¡solo para desarrollo!)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("PermitirFrontend", policy =>
+    options.AddPolicy("PermitirTodo", policy =>
     {
-        policy.WithOrigins() // puerto de React
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
 // Configurar Swagger y OpenAPI
-builder.Services.AddOpenApi();     // Extensión personalizada
+builder.Services.AddOpenApi();     // Extensión personalizada (si aplica)
 builder.Services.AddSwaggerGen();  // Swagger oficial
 
 // Configurar DbContext con cadena de conexión del appsettings.json
@@ -29,11 +29,9 @@ builder.Services.AddDbContext<ContextoLibreria>(options =>
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     ));
 
-
 // Servicios personalizados (validadores, etc.)
 builder.Services.AddCustomServices(builder.Configuration);
 
-// Construir app
 var app = builder.Build();
 
 // Activar Swagger
@@ -45,13 +43,13 @@ app.UseSwagger(c =>
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "API V1");
-    c.RoutePrefix = "swagger"; // importante si se accede en /swagger
+    c.RoutePrefix = "swagger";
 });
 
-app.MapOpenApi(); // Si usas extensión OpenApi personalizada
+app.MapOpenApi(); // Solo si usas esa extensión
 
-// Habilitar CORS
-app.UseCors("PermitirFrontend");
+// Usar CORS globalmente
+app.UseCors("PermitirTodo");
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
